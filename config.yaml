@@ -1,0 +1,57 @@
+providers:
+  openai:
+    enabled: true
+    api_key: ${OPENAI_API_KEY}
+    base_url: https://api.openai.com/v1
+    default_model: gpt-4o-mini
+    models:
+      - gpt-5-nano
+      - gpt-4o-mini
+      - gpt-3.5-turbo
+    timeout: 300
+    max_retries: 3
+
+  deepseek:
+    enabled: true
+    api_key: ${DEEPSEEK_API_KEY}
+    base_url: https://api.deepseek.com
+    default_model: deepseek-chat
+    models:
+      - deepseek-chat
+      - deepseek-reasoner
+    timeout: 300
+    max_retries: 3
+
+  qwen:
+    enabled: true
+    api_key: ${DASHSCOPE_API_KEY}
+    base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    default_model: qwen-turbo
+    models:
+      - qwen-turbo
+      - qwen-plus
+      - qwen-flash
+      - qwen-vl-plus
+      - qwen-vl-flash
+    timeout: 300
+    max_retries: 3
+
+  doubao:
+    enabled: true
+    api_key: ${ARK_API_KEY}
+    base_url: https://ark.cn-beijing.volces.com/api/v3
+    default_model: doubao-seed-1-6-flash-250715
+    thinking_enabled: false
+    models:
+      - doubao-seed-1-6-flash-250715
+      - doubao-seed-1-6-250615
+      - doubao-seed-1-6-thinking-250715
+      - doubao-seed-1-6-vision-250815
+    timeout: 300
+    max_retries: 3
+
+defaults:
+  temperature: 0.7
+  max_tokens: 500
+  stream: false
+  top_p: 1.0
