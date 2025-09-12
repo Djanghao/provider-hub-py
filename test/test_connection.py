@@ -4,9 +4,16 @@ import sys
 import os
 sys.path.append('..')
 
+from dotenv import load_dotenv
 from provider_hub import LLM, ChatMessage, prepare_image_content
 import json
 import datetime
+
+# Load environment variables
+for env_path in ["../.env", ".env"]:
+    if os.path.exists(env_path):
+        load_dotenv(env_path)
+        break
 
 test_results = {
     "timestamp": datetime.datetime.now().isoformat(),
@@ -49,12 +56,30 @@ def test_all_text_models():
         try:
             print(f"Testing {model_info['provider']} {model_info['model']} ({model_info['type']})...")
             
-            llm = LLM(
-                model=model_info['model'],
-                temperature=0.7,
-                max_tokens=50,
-                timeout=15
-            )
+            # Set token limits based on model type
+            max_tokens = 50
+            if model_info['model'].startswith('gpt-5'):
+                if model_info['model'] == 'gpt-5-nano':
+                    max_tokens = 300
+                elif model_info['model'] == 'gpt-5-mini':
+                    max_tokens = 250
+                else:
+                    max_tokens = 200
+            elif model_info['model'] == 'deepseek-reasoner':
+                max_tokens = 400
+            
+            config = {
+                "model": model_info['model'],
+                "temperature": 0.7,
+                "max_tokens": max_tokens,
+                "timeout": 15
+            }
+            
+            # Enable thinking for reasoner models
+            if model_info['model'] == 'deepseek-reasoner':
+                config["thinking"] = True
+                
+            llm = LLM(**config)
             
             if model_info['type'] == 'coding':
                 prompt = "Write a simple hello world in Python"
@@ -69,7 +94,10 @@ def test_all_text_models():
             if response.usage:
                 result["tokens"] = response.usage.get('total_tokens', 0)
             
-            print(f"✅ Success: {response.content[:100]}...")
+            preview = response.content[:100] if response.content else "[Empty response]"
+            suffix = "..." if response.content and len(response.content) > 100 else ""
+            print(f"✅ Success: {preview}{suffix}")
+            
             if response.usage:
                 tokens = response.usage.get('total_tokens', 'N/A')
                 print(f"📊 Tokens: {tokens}")
@@ -92,9 +120,17 @@ def test_all_vision_models():
         {"model": "doubao-seed-1-6-vision-250815", "provider": "Doubao"},
     ]
     
-    image_path = "../assets/meme.jpg"
-    if not os.path.exists(image_path):
-        print(f"❌ Test image not found: {image_path}")
+    # Try multiple possible image paths
+    possible_paths = ["../assets/meme.jpg", "assets/meme.jpg", "./assets/meme.jpg"]
+    image_path = None
+    
+    for path in possible_paths:
+        if os.path.exists(path):
+            image_path = path
+            break
+    
+    if not image_path:
+        print(f"❌ Test image not found in any of: {possible_paths}")
         print("Skipping vision model tests\n")
         return
     
@@ -133,7 +169,10 @@ def test_all_vision_models():
             if response.usage:
                 result["tokens"] = response.usage.get('total_tokens', 0)
             
-            print(f"✅ Success: {response.content[:100]}...")
+            preview = response.content[:100] if response.content else "[Empty response]"
+            suffix = "..." if response.content and len(response.content) > 100 else ""
+            print(f"✅ Success: {preview}{suffix}")
+            
             if response.usage:
                 tokens = response.usage.get('total_tokens', 'N/A')
                 print(f"📊 Tokens: {tokens}")
@@ -169,10 +208,17 @@ def test_thinking_modes():
         try:
             print(f"Testing {model_info['provider']} {model_info['model']} (thinking mode)...")
             
+            # Set higher token limits for thinking models
+            max_tokens = 250
+            if model_info['model'] == 'deepseek-reasoner':
+                max_tokens = 400
+            elif model_info['model'] == 'doubao-seed-1-6-250615':
+                max_tokens = 350
+                
             llm = LLM(
                 model=model_info['model'],
                 thinking=model_info['thinking'],
-                max_tokens=100,
+                max_tokens=max_tokens,
                 timeout=25
             )
             
@@ -182,7 +228,10 @@ def test_thinking_modes():
             if response.usage:
                 result["tokens"] = response.usage.get('total_tokens', 0)
             
-            print(f"✅ Success: {response.content[:100]}...")
+            preview = response.content[:100] if response.content else "[Empty response]"
+            suffix = "..." if response.content and len(response.content) > 100 else ""
+            print(f"✅ Success: {preview}{suffix}")
+            
             if response.usage:
                 tokens = response.usage.get('total_tokens', 'N/A')
                 print(f"📊 Tokens: {tokens}")
@@ -219,10 +268,16 @@ def generate_report():
         f.write("# Provider Hub Test Report\n\n")
         f.write(f"**Test Date**: {test_results['timestamp']}\n\n")
         f.write("## Summary\n\n")
-        f.write(f"- **Text Models**: {success_text}/{total_text} ({success_text/total_text*100:.1f}%)\n")
-        f.write(f"- **Vision Models**: {success_vision}/{total_vision} ({success_vision/total_vision*100:.1f}%)\n") 
-        f.write(f"- **Thinking Models**: {success_thinking}/{total_thinking} ({success_thinking/total_thinking*100:.1f}%)\n")
-        f.write(f"- **Overall Success**: {test_results['summary']['overall']['success']}/{test_results['summary']['overall']['total']} ({test_results['summary']['overall']['success']/test_results['summary']['overall']['total']*100:.1f}%)\n\n")
+        text_rate = success_text/total_text*100 if total_text > 0 else 0
+        vision_rate = success_vision/total_vision*100 if total_vision > 0 else 0
+        thinking_rate = success_thinking/total_thinking*100 if total_thinking > 0 else 0
+        overall_total = test_results['summary']['overall']['total']
+        overall_rate = test_results['summary']['overall']['success']/overall_total*100 if overall_total > 0 else 0
+        
+        f.write(f"- **Text Models**: {success_text}/{total_text} ({text_rate:.1f}%)\n")
+        f.write(f"- **Vision Models**: {success_vision}/{total_vision} ({vision_rate:.1f}%)\n") 
+        f.write(f"- **Thinking Models**: {success_thinking}/{total_thinking} ({thinking_rate:.1f}%)\n")
+        f.write(f"- **Overall Success**: {test_results['summary']['overall']['success']}/{overall_total} ({overall_rate:.1f}%)\n\n")
         
         f.write("## Detailed Results\n\n")
         
@@ -232,7 +287,9 @@ def generate_report():
             f.write(f"- {status} **{result['provider']} {result['model']}** ({result['type']})\n")
             if result["status"] == "success":
                 f.write(f"  - Tokens: {result['tokens']}\n")
-                f.write(f"  - Response: {result['response_preview']}...\n")
+                clean_preview = result['response_preview'].replace('\n', ' ')
+                suffix = "..." if result['response_preview'] and len(result['response_preview']) > 100 else ""
+                f.write(f"  - Response: {clean_preview}{suffix}\n")
             else:
                 f.write(f"  - Error: {result['error']}\n")
         f.write("\n")
@@ -243,7 +300,9 @@ def generate_report():
             f.write(f"- {status} **{result['provider']} {result['model']}**\n")
             if result["status"] == "success":
                 f.write(f"  - Tokens: {result['tokens']}\n")
-                f.write(f"  - Response: {result['response_preview']}...\n")
+                clean_preview = result['response_preview'].replace('\n', ' ')
+                suffix = "..." if result['response_preview'] and len(result['response_preview']) > 100 else ""
+                f.write(f"  - Response: {clean_preview}{suffix}\n")
             else:
                 f.write(f"  - Error: {result['error']}\n")
         f.write("\n")
@@ -254,7 +313,9 @@ def generate_report():
             f.write(f"- {status} **{result['provider']} {result['model']}**\n")
             if result["status"] == "success":
                 f.write(f"  - Tokens: {result['tokens']}\n")
-                f.write(f"  - Response: {result['response_preview']}...\n")
+                clean_preview = result['response_preview'].replace('\n', ' ')
+                suffix = "..." if result['response_preview'] and len(result['response_preview']) > 100 else ""
+                f.write(f"  - Response: {clean_preview}{suffix}\n")
             else:
                 f.write(f"  - Error: {result['error']}\n")
     
@@ -267,7 +328,14 @@ def main():
     print("=" * 50)
     print()
     
-    if not os.path.exists("../.env"):
+    env_paths = ["../.env", ".env", "../.env"]
+    env_found = False
+    for env_path in env_paths:
+        if os.path.exists(env_path):
+            env_found = True
+            break
+    
+    if not env_found:
         print("❌ .env file not found")
         return
     
