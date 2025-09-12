@@ -1,4 +1,9 @@
 Notice: do not modify this file unless requested.
+Supported Models:
+- doubao-seed-1-6-250615
+- doubao-seed-1-6-vision-250815
+- doubao-seed-1-6-flash-250828
+
 # 1. doubao native sdk (prefered)
 ## default
 ```python

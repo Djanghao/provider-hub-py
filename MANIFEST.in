@@ -1,0 +1,12 @@
+include README.md
+include LICENSE
+recursive-include provider_hub *.py
+recursive-exclude provider_hub __pycache__
+exclude .env
+exclude .env.*
+exclude *.key
+exclude *secret*
+exclude test_report.*
+exclude assets/*
+global-exclude *.pyc
+global-exclude __pycache__

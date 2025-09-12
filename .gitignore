@@ -1,4 +1,19 @@
-__pycache__
+# Environment files
 .env
+
+# Python
+__pycache__/
+*.pyc
+build/
 dist/
 *.egg-info/
+
+# Virtual environments
+venv/
+
+# Test reports
+test_report.json
+test_report.md
+
+# OS
+.DS_Store

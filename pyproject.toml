@@ -1,48 +1,33 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "provider_hub"
-version = "0.1.0"
-description = "Unified Python interface for multiple AI providers: OpenAI, DeepSeek, Qwen, and Doubao"
+version = "0.2.0"
+description = "Unified LLM provider interface for multi-agent systems"
 readme = "README.md"
-requires-python = ">=3.8"
-license = {text = "MIT"}
-authors = [
-    {name = "Djanghao", email = "hstnzhang@gmail.com"},
-]
-keywords = ["ai", "openai", "deepseek", "qwen", "doubao", "llm", "chatbot"]
+license = "MIT"
+authors = [{name = "Djanghao"}]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
+requires-python = ">=3.7"
 dependencies = [
     "openai>=1.0.0",
-    "pyyaml>=6.0",
-    "pydantic>=2.0.0",
-    "python-dotenv>=1.0.0",
-    "typing-extensions>=4.0.0",
     "volcengine-python-sdk[ark]>=1.0.0",
+    "python-dotenv>=0.19.0",
+    "tenacity>=8.0.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/Djanghao/provider-hub"
-Repository = "https://github.com/Djanghao/provider-hub"
-"Bug Tracker" = "https://github.com/Djanghao/provider-hub/issues"
-
-[tool.setuptools]
-py-modules = ["providers", "models", "config"]
-
-[tool.setuptools.package-data]
-"*" = ["*.yaml", "*.yml"]
+Homepage = "https://github.com/houston-zhang/provider_hub"
+Repository = "https://github.com/houston-zhang/provider_hub.git"
+Issues = "https://github.com/houston-zhang/provider_hub/issues"
