@@ -2,7 +2,7 @@ from .core import LLM, LLMConfig, ChatMessage, ChatResponse
 from .utils import EnvManager, encode_image_to_base64, prepare_image_content
 from . import exceptions
 
-__version__ = "0.1.0"
+__version__ = "0.3.0"
 
 def test_connection():
     """Quick connection test for representative models from each provider"""
