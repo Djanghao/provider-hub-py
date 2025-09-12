@@ -44,8 +44,8 @@ class OpenAIProvider(BaseLLMProvider):
         if self.config.model.startswith('gpt-5'):
             if 'max_tokens' in params:
                 params['max_completion_tokens'] = params.pop('max_tokens')
-            if 'temperature' in params and params['temperature'] != 1:
-                params.pop('temperature')
+            if 'temperature' in params and params['temperature'] != 1.0:
+                params['temperature'] = 1.0
         
         response = self.client.chat.completions.create(
             model=self.config.model,
@@ -53,8 +53,15 @@ class OpenAIProvider(BaseLLMProvider):
             **params
         )
         
+        message_content = response.choices[0].message.content or ''
+        reasoning_tokens = getattr(response.usage.completion_tokens_details, 'reasoning_tokens', 0) if response.usage and hasattr(response.usage, 'completion_tokens_details') else 0
+        
+        final_content = message_content
+        if not message_content and reasoning_tokens > 0:
+            final_content = f"[Model performed {reasoning_tokens} reasoning tokens - content not accessible]"
+        
         return ChatResponse(
-            content=response.choices[0].message.content,
+            content=final_content or '[No visible content - model performed reasoning]',
             model=response.model,
             usage=response.usage.model_dump() if response.usage else None,
             finish_reason=response.choices[0].finish_reason
