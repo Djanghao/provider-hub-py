@@ -23,7 +23,7 @@ test_results = {
     "summary": {}
 }
 
-def test_all_text_models():
+def test_all_text_models(provider=None, model=None, enableThinking=True):
     print("=== Testing All Text Models ===\n")
     
     all_models = [
@@ -43,6 +43,10 @@ def test_all_text_models():
     ]
     
     for model_info in all_models:
+        if provider and model:
+            if model_info['provider'] != provider or model_info['model'] != model:
+                continue
+
         result = {
             "model": model_info['model'],
             "provider": model_info['provider'],
@@ -110,7 +114,7 @@ def test_all_text_models():
         
         test_results["text_models"].append(result)
 
-def test_all_vision_models():
+def test_all_vision_models(provider=None, model=None, enableThinking=True):
     print("=== Testing All Vision Models ===\n")
     
     vision_models = [
@@ -135,6 +139,10 @@ def test_all_vision_models():
         return
     
     for model_info in vision_models:
+        if provider and model:
+            if model_info['provider'] != provider or model_info['model'] != model:
+                continue
+
         result = {
             "model": model_info['model'],
             "provider": model_info['provider'],
@@ -185,7 +193,7 @@ def test_all_vision_models():
         
         test_results["vision_models"].append(result)
 
-def test_thinking_modes():
+def test_thinking_modes(provider=None, model=None, enableThinking=True):
     print("=== Testing Thinking Modes ===\n")
     
     thinking_models = [
@@ -195,6 +203,10 @@ def test_thinking_modes():
     ]
     
     for model_info in thinking_models:
+        if provider and model:
+            if model_info['provider'] != provider or model_info['model'] != model:
+                continue
+
         result = {
             "model": model_info['model'],
             "provider": model_info['provider'],
@@ -214,6 +226,15 @@ def test_thinking_modes():
                 max_tokens = 400
             elif model_info['model'] == 'doubao-seed-1-6-250615':
                 max_tokens = 350
+                
+            if not enableThinking:
+                if provider == "Doubao":
+                    model_info['thinking'] = {"type": "disabled"} # probably is other type name
+                else:
+                    model_info['thinking'] = False
+                print("thinking disabled")
+            else:
+                print("thinking enabled")
                 
             llm = LLM(
                 model=model_info['model'],
@@ -322,6 +343,43 @@ def generate_report():
     print("📄 Reports generated:")
     print("  - test_report.json")
     print("  - test_report.md")
+
+def test_specific_model(provider, model, enableThinking):
+    thinking_models = [
+        {"model": "deepseek-reasoner", "provider": "DeepSeek", "thinking": True},
+        {"model": "qwen3-max-preview", "provider": "Qwen", "thinking": True},
+        {"model": "doubao-seed-1-6-250615", "provider": "Doubao", "thinking": {"type": "enabled"}},
+    ]
+    test_models = [
+        {"model": "gpt-5", "provider": "OpenAI", "type": "chat"},
+        {"model": "gpt-5-mini", "provider": "OpenAI", "type": "chat"},
+        {"model": "gpt-5-nano", "provider": "OpenAI", "type": "chat"},
+        {"model": "gpt-4.1", "provider": "OpenAI", "type": "chat"},
+        {"model": "deepseek-chat", "provider": "DeepSeek", "type": "chat"},
+        {"model": "deepseek-reasoner", "provider": "DeepSeek", "type": "reasoning"},
+        {"model": "qwen3-max-preview", "provider": "Qwen", "type": "chat"},
+        {"model": "qwen-plus", "provider": "Qwen", "type": "chat"},
+        {"model": "qwen-flash", "provider": "Qwen", "type": "chat"},
+        {"model": "qwen3-coder-plus", "provider": "Qwen", "type": "coding"},
+        {"model": "qwen3-coder-flash", "provider": "Qwen", "type": "coding"},
+        {"model": "doubao-seed-1-6-250615", "provider": "Doubao", "type": "chat"},
+        {"model": "doubao-seed-1-6-flash-250828", "provider": "Doubao", "type": "chat"},
+    ]
+    vision_models = [
+        {"model": "gpt-4.1", "provider": "OpenAI"},
+        {"model": "qwen-vl-max", "provider": "Qwen"},
+        {"model": "qwen-vl-plus", "provider": "Qwen"},
+        {"model": "doubao-seed-1-6-vision-250815", "provider": "Doubao"},
+    ]
+
+    if (provider, model) in [(m['provider'], m['model']) for m in thinking_models]:
+        test_thinking_modes(provider, model, enableThinking)
+    elif (provider, model) in [(m['provider'], m['model']) for m in test_models]:
+        test_all_text_models(provider, model, enableThinking)
+    elif (provider, model) in [(m['provider'], m['model']) for m in vision_models]:
+        test_all_vision_models(provider, model, enableThinking)
+    else:
+        print(f"❌ Model {model} from {provider} not found in any test category.")
 
 def main():
     print("🔥 Provider Hub - Complete Model Testing")
