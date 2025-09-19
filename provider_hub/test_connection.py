@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import sys
 import os
 sys.path.append('..')
@@ -23,7 +21,7 @@ test_results = {
     "summary": {}
 }
 
-def test_all_text_models():
+def test_all_text_models(provider=None, model=None):
     print("=== Testing All Text Models ===\n")
     
     all_models = [
@@ -43,6 +41,10 @@ def test_all_text_models():
     ]
     
     for model_info in all_models:
+        if provider and model:
+            if model_info['provider'] != provider or model_info['model'] != model:
+                continue
+
         result = {
             "model": model_info['model'],
             "provider": model_info['provider'],
@@ -110,7 +112,7 @@ def test_all_text_models():
         
         test_results["text_models"].append(result)
 
-def test_all_vision_models():
+def test_all_vision_models(provider=None, model=None):
     print("=== Testing All Vision Models ===\n")
     
     vision_models = [
@@ -135,6 +137,10 @@ def test_all_vision_models():
         return
     
     for model_info in vision_models:
+        if provider and model:
+            if model_info['provider'] != provider or model_info['model'] != model:
+                continue
+
         result = {
             "model": model_info['model'],
             "provider": model_info['provider'],
@@ -185,7 +191,7 @@ def test_all_vision_models():
         
         test_results["vision_models"].append(result)
 
-def test_thinking_modes():
+def test_thinking_modes(provider=None, model=None, enableThinking=True):
     print("=== Testing Thinking Modes ===\n")
     
     thinking_models = [
@@ -195,6 +201,10 @@ def test_thinking_modes():
     ]
     
     for model_info in thinking_models:
+        if provider and model:
+            if model_info['provider'] != provider or model_info['model'] != model:
+                continue
+
         result = {
             "model": model_info['model'],
             "provider": model_info['provider'],
@@ -214,6 +224,15 @@ def test_thinking_modes():
                 max_tokens = 400
             elif model_info['model'] == 'doubao-seed-1-6-250615':
                 max_tokens = 350
+                
+            if not enableThinking:
+                if provider == "Doubao":
+                    model_info['thinking'] = {"type": "disabled"} # probably is other type name
+                else:
+                    model_info['thinking'] = False
+                print("thinking disabled")
+            else:
+                print("thinking enabled")
                 
             llm = LLM(
                 model=model_info['model'],
@@ -323,7 +342,34 @@ def generate_report():
     print("  - test_report.json")
     print("  - test_report.md")
 
-def main():
+def test_connection(provider=None, model=None, enableThinking=True):
+    thinking_models = [
+        {"model": "deepseek-reasoner", "provider": "DeepSeek", "thinking": True},
+        {"model": "qwen3-max-preview", "provider": "Qwen", "thinking": True},
+        {"model": "doubao-seed-1-6-250615", "provider": "Doubao", "thinking": {"type": "enabled"}},
+    ]
+    text_models = [
+        {"model": "gpt-5", "provider": "OpenAI", "type": "chat"},
+        {"model": "gpt-5-mini", "provider": "OpenAI", "type": "chat"},
+        {"model": "gpt-5-nano", "provider": "OpenAI", "type": "chat"},
+        {"model": "gpt-4.1", "provider": "OpenAI", "type": "chat"},
+        {"model": "deepseek-chat", "provider": "DeepSeek", "type": "chat"},
+        {"model": "deepseek-reasoner", "provider": "DeepSeek", "type": "reasoning"},
+        {"model": "qwen3-max-preview", "provider": "Qwen", "type": "chat"},
+        {"model": "qwen-plus", "provider": "Qwen", "type": "chat"},
+        {"model": "qwen-flash", "provider": "Qwen", "type": "chat"},
+        {"model": "qwen3-coder-plus", "provider": "Qwen", "type": "coding"},
+        {"model": "qwen3-coder-flash", "provider": "Qwen", "type": "coding"},
+        {"model": "doubao-seed-1-6-250615", "provider": "Doubao", "type": "chat"},
+        {"model": "doubao-seed-1-6-flash-250828", "provider": "Doubao", "type": "chat"},
+    ]
+    vision_models = [
+        {"model": "gpt-4.1", "provider": "OpenAI"},
+        {"model": "qwen-vl-max", "provider": "Qwen"},
+        {"model": "qwen-vl-plus", "provider": "Qwen"},
+        {"model": "doubao-seed-1-6-vision-250815", "provider": "Doubao"},
+    ]
+
     print("🔥 Provider Hub - Complete Model Testing")
     print("=" * 50)
     print()
@@ -339,13 +385,53 @@ def main():
         print("❌ .env file not found")
         return
     
-    test_all_text_models()
-    test_all_vision_models()
-    test_thinking_modes()
-    
-    generate_report()
-    
-    print("\n🎉 Testing completed with reports generated!")
+    if not provider or not model:
+        test_all_text_models()
+        test_all_vision_models()
+        test_thinking_modes()
 
-if __name__ == "__main__":
-    main()
+        generate_report()
+        print("\n🎉 Testing completed with reports generated!")
+    else:
+        if (provider, model) in [(m['provider'], m['model']) for m in thinking_models]:
+            test_thinking_modes(provider, model, enableThinking)
+        elif (provider, model) in [(m['provider'], m['model']) for m in text_models]:
+            test_all_text_models(provider, model)
+        elif (provider, model) in [(m['provider'], m['model']) for m in vision_models]:
+            test_all_vision_models(provider, model)
+        else:
+            print(f"❌ Model {model} from {provider} not found in any test category.")
+        print("\n🎉 Testing completed!")
+    
+
+def test_connection_quick(provider=None):
+    """Quick connection test for representative models from each provider"""
+    try:
+        # Test one model from each provider
+        models_to_test = [
+            {"model": "doubao-seed-1-6-250615", "provider": "Doubao"}, # Doubao
+            {"model": "qwen-flash", "provider": "Qwen"},               # Qwen
+            {"model": "deepseek-chat", "provider": "DeepSeek"},        # DeepSeek  
+            {"model": "gpt-4.1", "provider": "OpenAI"}                 # OpenAI
+        ]
+        success_count = 0
+        
+        print("🔍 Testing Provider Hub connections...")
+        print("Testing representative models from each provider...")
+        
+        for model in models_to_test:
+            if provider and provider != model['provider']:
+                continue
+            try:
+                llm = LLM(model=model["model"], max_tokens=20, timeout=10)
+                response = llm.chat("Hi")
+                print(f"✅ {model["model"]}: {response.content[:50]}...")
+                success_count += 1
+            except Exception as e:
+                print(f"❌ {model["model"]}: {str(e)[:50]}...")
+        
+        print(f"\n🎉 {success_count}/{len(models_to_test)} providers working")
+        print("💡 For comprehensive testing of all 17 models, run: python test_connection.py")
+        
+    except Exception as e:
+        print(f"❌ Test failed: {e}")

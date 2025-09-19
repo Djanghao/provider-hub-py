@@ -3,46 +3,25 @@ import importlib
 import importlib.util
 import sys
 from pathlib import Path
-
-
-def _load_test_module():
-    pkg_dir = Path(__file__).resolve().parent
-    repo_root = pkg_dir.parent
-    test_path = repo_root / 'test' / 'test_connection.py'
-    if test_path.exists():
-        spec = importlib.util.spec_from_file_location('test.test_connection', str(test_path))
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
-        return mod
-
-    raise ImportError('Could not find test.test_connection module')
-
+from provider_hub.test_connection import test_connection, test_connection_quick
 
 def main():
     parser = argparse.ArgumentParser(description="Provider-Hub-PY CLI")
-    # -t may be provided alone (run full tests) or with three positional args:
-    #   provider model enableThinking
+    # -t may be provided alone (run full tests) or with three positional args: provider, model, enableThinking
     # We accept 0 or 3 values after -t. Example:
     #   provider-hub-py -t              -> run all tests
     #   provider-hub-py -t doubao doubao-seed-1-6-250615 true
+    # -qt may be provided alone (run full quick tests) or with one positional args: provider
+    # We accept 0 or 1 values after -t. Example:
+    #   provider-hub-py -qt              -> run all quick tests
+    #   provider-hub-py -qt doubao
     parser.add_argument('-t', dest='test_connection', nargs='*', metavar='provider, model, enableThinking', help='Run connection test (optionally: provider model enableThinking)')
+    parser.add_argument('-qt', dest='test_connection_quick', nargs='*', metavar='provider', help='Run quick connection test (optionally: provider)')
     args = parser.parse_args()
 
     tc = args.test_connection
+    tcq = args.test_connection_quick
     if tc is not None:
-        try:
-            test_mod = _load_test_module()
-        except ImportError as e:
-            print(f"Error: {e}")
-            print("Make sure test_connection is available inside the package.")
-            return
-
-        test_connection_main = getattr(test_mod, 'main', None)
-        test_connection_single = getattr(test_mod, 'test_specific_model', None)
-        if not callable(test_connection_main):
-            print('test_connection.main not found or not callable in module')
-            return
-
         def _to_bool(val):
             if isinstance(val, bool):
                 return val
@@ -61,11 +40,24 @@ def main():
             enable_thinking_arg = _to_bool(tc[2])
 
             try:
-                test_connection_single(provider_arg, model_arg, enable_thinking_arg)
+                test_connection(provider_arg, model_arg, enable_thinking_arg)
             except Exception as e:
                 print(f"Error running test_connection: {e}")
+        elif isinstance(tc, list) and len(tc) == 0:
+            test_connection()
         else:
-            test_connection_main()
+            parser.error("When using -t provide either no args or exactly 3 args: provider model enableThinking")
+    elif tcq is not None:
+        if isinstance(tcq, list) and len(tcq) == 1:
+            provider_arg = tcq[0]
+            try:
+                test_connection_quick(provider_arg)
+            except Exception as e:
+                print(f"Error running test_connection_quick: {e}")
+        elif isinstance(tcq, list) and len(tcq) == 0:
+            test_connection_quick()
+        else:
+            parser.error("When using -qt provide either no args or exactly 1 arg: provider")
     else:
         parser.print_help()
 

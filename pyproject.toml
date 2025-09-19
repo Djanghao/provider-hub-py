@@ -31,3 +31,6 @@ dependencies = [
 Homepage = "https://github.com/houston-zhang/provider_hub"
 Repository = "https://github.com/houston-zhang/provider_hub.git"
 Issues = "https://github.com/houston-zhang/provider_hub/issues"
+
+[project.scripts]
+provider-hub = "provider_hub.cli:main"
