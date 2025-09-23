@@ -29,7 +29,8 @@ class LLM:
         max_retries: Optional[int] = 3,
         thinking: Optional[Union[bool, str, Dict[str, Any]]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
-        extra_body: Optional[Dict[str, Any]] = None
+        extra_body: Optional[Dict[str, Any]] = None,
+        system_prompt: Optional[Union[str, List[Dict[str, Any]]]] = None
     ):
         if not provider:
             provider = EnvManager.get_provider_from_model(model)
@@ -51,7 +52,8 @@ class LLM:
             max_retries=max_retries,
             thinking=thinking,
             extra_headers=extra_headers,
-            extra_body=extra_body
+            extra_body=extra_body,
+            system_prompt=system_prompt
         )
         
         provider_class = self.PROVIDER_MAPPING[provider]
