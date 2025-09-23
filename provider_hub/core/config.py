@@ -14,6 +14,7 @@ class LLMConfig:
     thinking: Optional[Union[bool, str, Dict[str, Any]]] = None
     extra_headers: Optional[Dict[str, str]] = None
     extra_body: Optional[Dict[str, Any]] = None
+    system_prompt: Optional[Union[str, List[Dict[str, Any]]]] = None
 
 @dataclass  
 class ChatMessage:
