@@ -393,7 +393,7 @@ def test_connection(provider=None, model=None, enableThinking=True):
         generate_report()
         print("\n🎉 Testing completed with reports generated!")
     else:
-        if (provider, model) in [(m['provider'], m['model']) for m in thinking_models]:
+        if enableThinking and (provider, model) in [(m['provider'], m['model']) for m in thinking_models]:
             test_thinking_modes(provider, model, enableThinking)
         elif (provider, model) in [(m['provider'], m['model']) for m in text_models]:
             test_all_text_models(provider, model)
@@ -431,7 +431,7 @@ def test_connection_quick(provider=None):
                 print(f"❌ {model["model"]}: {str(e)[:50]}...")
         
         print(f"\n🎉 {success_count}/{len(models_to_test)} providers working")
-        print("💡 For comprehensive testing of all 17 models, run: python test_connection.py")
+        print("💡 For comprehensive testing of all 17 models, run: provider-hub -t")
         
     except Exception as e:
         print(f"❌ Test failed: {e}")
