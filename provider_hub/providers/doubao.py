@@ -89,6 +89,9 @@ class DoubaoProvider(BaseLLMProvider):
             **params,
             **thinking_params
         )
+
+        if params.get("stream", True):
+            return response
         
         return ChatResponse(
             content=response.choices[0].message.content,
@@ -109,6 +112,9 @@ class DoubaoProvider(BaseLLMProvider):
             extra_headers=extra_headers,
             **params
         )
+
+        if params.get("stream", True):
+            return response
         
         return ChatResponse(
             content=response.choices[0].message.content,

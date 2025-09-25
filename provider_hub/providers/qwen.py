@@ -64,6 +64,9 @@ class QwenProvider(BaseLLMProvider):
             messages=messages,
             **params
         )
+
+        if params.get("stream", True):
+            return response
         
         return ChatResponse(
             content=response.choices[0].message.content,

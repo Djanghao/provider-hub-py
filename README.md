@@ -99,6 +99,30 @@ response = vision_llm.chat(messages)
 print(response.content)
 ```
 
+You can also include multiple images in the same request by preparing each image and appending them to the content list:
+
+```python
+# Prepare local images
+image_content1 = prepare_image_content("path/to/your/image1.jpg")
+image_content2 = prepare_image_content("path/to/your/image2.jpg")
+# Add more images as needed
+
+# Create a message with text + multiple images
+messages = [
+    ChatMessage(
+        role="user",
+        content=[
+            {"type": "text", "text": "What do you see in these images?"},
+            image_content1,
+            image_content2,
+            # Add additional image_content items here
+        ]
+    )
+]
+
+# Continue with the rest of your code...
+```
+
 ### 🧠 Reasoning Mode
 
 Enable step-by-step reasoning for complex problem solving.
@@ -136,6 +160,112 @@ doubao_reasoning = LLM(
 response = qwen_reasoning.chat("Calculate 15 * 23 step by step")
 print(response.content)
 ```
+
+### 💬 System prompt
+
+Set a default system prompt when creating an `LLM` so it is automatically prepended to every request. `system_prompt` accepts either a simple string or a list of structured system messages (dicts with role/content).
+
+Examples:
+
+```python
+from provider_hub import LLM
+
+# Simple string system prompt
+llm = LLM(
+    model="doubao-seed-1-6-250615", 
+    temperature=0.7,
+    top_p=0.9,
+    max_tokens=100,
+    timeout=30,
+    system_prompt="You are a concise assistant."
+)
+response = llm.chat("Explain recursion in one paragraph")
+print(response.content)
+
+# Structured system prompt (list of role/content dicts)
+llm2 = LLM(
+    model="doubao-seed-1-6-250615", 
+    temperature=0.7,
+    top_p=0.9,
+    max_tokens=100,
+    timeout=30,
+    system_prompt=[{"role": "system", "content": "You are a helpful assistant."}]
+)
+response2 = llm2.chat("Summarize the API")
+print(response2.content)
+```
+
+Notes:
+- If you pass a `system` role message directly to `chat(...)` it will raise a `ValueError` to avoid duplicate system prompts; prefer using `system_prompt` at initialization.
+- `system_prompt` supports both string and structured list formats. But for list formats, the `"role"` can only be set to `"system"`.
+
+### 📡 Streaming mode
+***only support Doubao and Qwen models for now**
+This library provides two mechanisms for controlling streaming behavior when supported by a provider:
+
+- `stream` (bool):
+    - `True`: The provider returns an iterator that yields partial chunk dictionaries as the model generates its response.
+    - `False` (default): The provider returns a final `ChatResponse` object.
+- `stream_options` (dict[str, bool]): Additional options for streaming responses. Only set this when `stream=True`.
+    - **Qwen**:
+        - `{"include_usage": True}` → includes the total token usage in the last line of the output.
+    - **Doubao**:
+        - `{"include_usage": True}` → includes the total token usage in the last line of the output.
+        - `{"chunk_include_usage": True}` → includes the cumulative token usage in every chunk of the output.
+
+Usage examples:
+
+```python
+from provider_hub import LLM
+
+# Simple string system prompt
+llm = LLM(
+    model="doubao-seed-1-6-250615", 
+    temperature=0.7,
+    top_p=0.9,
+    max_tokens=100,
+    timeout=30,
+    stream=True,
+    stream_options={"include_usage": True}
+)
+
+response = llm.chat("Hello, how are you?")
+for chunk in response:
+    for choice in chunk.choices:
+        if choice.delta.content:
+            print(chunk.model_dump_json())
+for chunk in response:
+    if chunk.choices:
+        for choice in chunk.choices:
+            # only print chunks that include response
+            if choice.delta.content:
+                print(chunk.model_dump_json())
+    # Print the last line with total token usage
+    else:
+        print(chunk.model_dump_json())
+
+# # Or if you only want to flush out the response word by word:
+# for chunk in response:
+#     for choice in chunk.choices:
+#         if choice.delta.content:
+#             print(choice.delta.content, end='', flush=True)
+#             print()
+#     # Print only total token usage data
+#     else:
+#         print("\n", chunk.usage)
+```
+```response
+{"id":"0217588133559349544d93cbdf8c60805d428c33f3725821804f8","choices":[{"delta":{"content":"Hello","function_call":null,"role":"assistant","tool_calls":null,"reasoning_content":null},"finish_reason":null,"moderation_hit_type":null,"index":0,"logprobs":null}],"created":1758813356,"model":"doubao-seed-1-6-250615","service_tier":"default","object":"chat.completion.chunk","usage":null}
+{"id":"0217588133559349544d93cbdf8c60805d428c33f3725821804f8","choices":[{"delta":{"content":"!","function_call":null,"role":"assistant","tool_calls":null,"reasoning_content":null},"finish_reason":null,"moderation_hit_type":null,"index":0,"logprobs":null}],"created":1758813356,"model":"doubao-seed-1-6-250615","service_tier":"default","object":"chat.completion.chunk","usage":null}
+...
+{"id":"0217588133559349544d93cbdf8c60805d428c33f3725821804f8","choices":[{"delta":{"content":" 😊","function_call":null,"role":"assistant","tool_calls":null,"reasoning_content":null},"finish_reason":null,"moderation_hit_type":null,"index":0,"logprobs":null}],"created":1758813356,"model":"doubao-seed-1-6-250615","service_tier":"default","object":"chat.completion.chunk","usage":null}
+{"id":"0217588133559349544d93cbdf8c60805d428c33f3725821804f8","choices":[],"created":1758813356,"model":"doubao-seed-1-6-250615","service_tier":null,"object":"chat.completion.chunk","usage":{"completion_tokens":124,"prompt_tokens":90,"total_tokens":214,"prompt_tokens_details":{"cached_tokens":0,"provisioned_tokens":null},"completion_tokens_details":{"reasoning_tokens":106,"provisioned_tokens":null}}}
+```
+
+Note:
+
+- Not all providers or models support streaming. Always check a model’s capabilities before enabling streaming to avoid runtime errors.
+- `stream_options`is provider-specific. Refer to the provider’s documentation for the supported keys.
 
 ### ⚡ OpenAI GPT-5 Reasoning Effort
 
@@ -229,7 +359,7 @@ Container for structured messages.
 
 ```python
 message = ChatMessage(
-    role="user",  # "user", "assistant", "system"
+    role="user",  # "user", "assistant"
     content="text or list of content items"
 )
 ```
@@ -315,3 +445,40 @@ python test_connection.py
 This generates:
 - `test_report.json` - Machine-readable results
 - `test_report.md` - Human-readable report
+
+### CLI: running provider tests
+
+This project includes a small CLI entry point (`provider-hub`) to run provider connection tests from the repository.
+
+Flags supported:
+
+- `-t`, `--test`:
+    - No args: run the full test suite.
+    - Two args: run a single-model test: `provider model`.
+    - Example (run all):
+        ```powershell
+        provider-hub -t
+        ```
+    - Example (single model + disable thinking):
+        ```powershell
+        provider-hub -t Doubao doubao-seed-1-6-250615
+        ```
+    - Example (single model + enable thinking):
+        ```powershell
+        provider-hub -t Doubao doubao-seed-1-6-250615 -k
+        ```
+
+- `-q`, `--quick-test`:
+    - No args: run all quick tests.
+    - One arg: run quick tests for a single provider.
+    - Example (run all quick tests):
+        ```powershell
+        provider-hub -q
+        ```
+    - Example (quick test for Doubao):
+        ```powershell
+        provider-hub -q Doubao
+        ```
+
+- `-k`, `--thinking`:
+    - A boolean flag used together with a single-model `-t` invocation to enable provider "thinking" where supported.
