@@ -90,7 +90,7 @@ class DoubaoProvider(BaseLLMProvider):
             **thinking_params
         )
 
-        if params.get("stream", True):
+        if params.get("stream") is True:
             return response
         
         return ChatResponse(
@@ -113,7 +113,7 @@ class DoubaoProvider(BaseLLMProvider):
             **params
         )
 
-        if params.get("stream", True):
+        if params.get("stream") is True:
             return response
         
         return ChatResponse(

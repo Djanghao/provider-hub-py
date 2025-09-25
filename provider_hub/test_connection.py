@@ -119,6 +119,8 @@ def test_all_vision_models(provider=None, model=None):
         {"model": "gpt-4.1", "provider": "OpenAI"},
         {"model": "qwen-vl-max", "provider": "Qwen"},
         {"model": "qwen-vl-plus", "provider": "Qwen"},
+        {"model": "qwen3-vl-plus", "provider": "Qwen"},
+        {"model": "qwen3-vl-235b-a22b-instruct", "provider": "Qwen"},
         {"model": "doubao-seed-1-6-vision-250815", "provider": "Doubao"},
     ]
     
@@ -197,6 +199,9 @@ def test_thinking_modes(provider=None, model=None, enableThinking=True):
     thinking_models = [
         {"model": "deepseek-reasoner", "provider": "DeepSeek", "thinking": True},
         {"model": "qwen3-max-preview", "provider": "Qwen", "thinking": True},
+        {"model": "qwen3-max", "provider": "Qwen", "thinking": True},
+        {"model": "qwen3-omni-flash", "provider": "Qwen", "thinking": True},
+        {"model": "qwen3-235b-a22b", "provider": "Qwen", "thinking": True},
         {"model": "doubao-seed-1-6-250615", "provider": "Doubao", "thinking": {"type": "enabled"}},
     ]
     
@@ -346,6 +351,7 @@ def test_connection(provider=None, model=None, enableThinking=True):
     thinking_models = [
         {"model": "deepseek-reasoner", "provider": "DeepSeek", "thinking": True},
         {"model": "qwen3-max-preview", "provider": "Qwen", "thinking": True},
+        {"model": "qwen3-max", "provider": "Qwen", "thinking": True},
         {"model": "doubao-seed-1-6-250615", "provider": "Doubao", "thinking": {"type": "enabled"}},
     ]
     text_models = [
@@ -367,6 +373,8 @@ def test_connection(provider=None, model=None, enableThinking=True):
         {"model": "gpt-4.1", "provider": "OpenAI"},
         {"model": "qwen-vl-max", "provider": "Qwen"},
         {"model": "qwen-vl-plus", "provider": "Qwen"},
+        {"model": "qwen3-vl-plus", "provider": "Qwen"},
+        {"model": "qwen3-vl-235b-a22b-instruct", "provider": "Qwen"},
         {"model": "doubao-seed-1-6-vision-250815", "provider": "Doubao"},
     ]
 
