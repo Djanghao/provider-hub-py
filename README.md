@@ -1,21 +1,27 @@
 # Provider Hub
 
-Unified LLM provider interface for multi-agent systems.
+Unified interface for accessing multiple LLM providers.
+
+---
 
 ## Table of Contents
 
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Core Features](#core-features)
-- [API Reference](#api-reference)
-- [Supported Models](#supported-models)
-- [Testing](#testing)
+* [Installation](#installation)
+* [Quick Start](#quick-start)
+* [Core Features](#core-features)
+* [API Reference](#api-reference)
+* [Supported Models](#supported-models)
+* [Testing](#testing)
+
+---
 
 ## Installation
 
 ```bash
-pip install provider_hub
+pip install provider-hub
 ```
+
+---
 
 ## Quick Start
 
@@ -25,7 +31,7 @@ Create a `.env` file in your project root:
 
 ```bash
 OPENAI_API_KEY=your-openai-api-key
-DEEPSEEK_API_KEY=your-deepseek-api-key  
+DEEPSEEK_API_KEY=your-deepseek-api-key
 DASHSCOPE_API_KEY=your-qwen-api-key
 ARK_API_KEY=your-doubao-api-key
 ```
@@ -47,9 +53,11 @@ response = llm.chat("Hello, how are you?")
 print(response.content)
 ```
 
+---
+
 ## Core Features
 
-### 📝 Text Processing
+### Text Processing
 
 All models support standard text chat functionality with configurable parameters.
 
@@ -67,7 +75,9 @@ response = llm.chat("Explain quantum computing")
 print(response.content)
 ```
 
-### 🖼️ Vision Processing
+---
+
+### Vision Processing
 
 Process both local images and URLs with vision-capable models.
 
@@ -86,8 +96,9 @@ vision_llm = LLM(
 image_content = prepare_image_content("path/to/your/image.jpg")
 
 # Or process image URL
-# image_content = prepare_image_content("https://example.com/image.jpg")
+image_content = prepare_image_content("https://example.com/image.jpg")
 
+# Create a message with text + image
 messages = [ChatMessage(
     role="user",
     content=[
@@ -99,7 +110,7 @@ response = vision_llm.chat(messages)
 print(response.content)
 ```
 
-You can also include multiple images in the same request by preparing each image and appending them to the content list:
+You can also include multiple images in the same request:
 
 ```python
 # Prepare local images
@@ -119,11 +130,11 @@ messages = [
         ]
     )
 ]
-
-# Continue with the rest of your code...
 ```
 
-### 🧠 Reasoning Mode
+---
+
+### Reasoning Mode
 
 Enable step-by-step reasoning for complex problem solving.
 
@@ -161,11 +172,11 @@ response = qwen_reasoning.chat("Calculate 15 * 23 step by step")
 print(response.content)
 ```
 
-### 💬 System prompt
+---
 
-Set a default system prompt when creating an `LLM` so it is automatically prepended to every request. `system_prompt` accepts either a simple string or a list of structured system messages (dicts with role/content).
+### System Prompt
 
-Examples:
+Set a default system prompt when initializing `LLM`.
 
 ```python
 from provider_hub import LLM
@@ -195,26 +206,32 @@ response2 = llm2.chat("Summarize the API")
 print(response2.content)
 ```
 
-Notes:
-- If you pass a `system` role message directly to `chat(...)` it will raise a `ValueError` to avoid duplicate system prompts; prefer using `system_prompt` at initialization.
-- `system_prompt` supports both string and structured list formats. But for list formats, the `"role"` can only be set to `"system"`.
+**Notes:**
 
-### 📡 Streaming mode
-***only support Doubao and Qwen models for now**
-This library provides two mechanisms for controlling streaming behavior when supported by a provider:
+* Do not pass `system` role message directly to `chat(...)`. Use `system_prompt` instead.
+* For list format, `role` must be `"system"`.
 
-- `stream` (bool):
-    - `True`: The provider returns an iterator that yields partial chunk dictionaries as the model generates its response.
-    - `False` (default): The provider returns a final `ChatResponse` object.
-- `stream_options` (dict[str, bool]): Additional options for streaming responses. Only set this when `stream=True`.
-    - `{"include_usage": True}` → includes the total token usage in the last line of the output.
+---
 
-Usage examples:
+### Streaming Mode
+
+**Only supported by Doubao and Qwen models.**
+
+This library provides two mechanisms for controlling streaming:
+
+* `stream` (bool):
+
+  * `True`: Returns an iterator yielding partial chunk dictionaries as the model generates output.
+  * `False`: Returns a final `ChatResponse` object (default).
+
+* `stream_options` (`dict[str, bool]`): Additional options for streaming responses. Only set this when `stream=True`.
+
+  * Example: `{"include_usage": True}` → includes the total token usage in the last line of the output.
 
 ```python
 from provider_hub import LLM
 
-# Simple string system prompt
+# Streaming with token usage included
 llm = LLM(
     model="doubao-seed-1-6-250615", 
     temperature=0.7,
@@ -237,18 +254,21 @@ for chunk in response:
         print("\n", chunk.usage)
 ```
 
-Note:
+**Notes:**
 
-- Not all providers or models support streaming. Always check a model’s capabilities before enabling streaming to avoid runtime errors.
-- `stream_options`is provider-specific. Refer to the provider’s documentation for the supported keys.
+* Not all providers or models support streaming. Always check a model’s capabilities before enabling streaming to avoid runtime errors.
+* `stream_options` is provider-specific. Refer to the provider’s documentation for supported keys.
 
-### ⚡ OpenAI GPT-5 Reasoning Effort
+---
 
-GPT-5 models support adjustable reasoning intensity through the chat method.
+### OpenAI GPT-5 Reasoning Effort
+
+GPT-5 models support adjustable reasoning intensity through the `chat` method.
 
 ```python
 from provider_hub import LLM
 
+# GPT-5 with high reasoning effort
 gpt5_reasoning = LLM(
     model="gpt-5",
     max_tokens=200,
@@ -262,98 +282,64 @@ response = gpt5_reasoning.chat(
 print(response.content)
 ```
 
+---
+
 ## API Reference
 
 ### Parameters
 
-| Parameter | Type | Description | Range/Options |
-|-----------|------|-------------|---------------|
-| `model` | string | Model identifier | See [Supported Models](#supported-models) |
-| `temperature` | float | Controls randomness | 0.0-2.0 (0=deterministic, 2=very creative) |
-| `top_p` | float | Nucleus sampling threshold | 0.0-1.0 |
-| `max_tokens` | int | Maximum response length | Positive integer |
-| `timeout` | int | Request timeout | Seconds (default: 30) |
-| `thinking` | bool/dict | Enable reasoning mode | Provider-specific format |
-| `reasoning_effort` | string | GPT-5 reasoning intensity | "low", "medium", "high" |
+| Parameter          | Type      | Description                | Range/Options                             |
+| ------------------ | --------- | -------------------------- | ----------------------------------------- |
+| `model`            | string    | Model identifier           | See [Supported Models](#supported-models) |
+| `temperature`      | float     | Controls randomness        | 0.0–2.0                                   |
+| `top_p`            | float     | Nucleus sampling threshold | 0.0–1.0                                   |
+| `max_tokens`       | int       | Maximum response length    | Positive integer                          |
+| `timeout`          | int       | Request timeout            | Seconds (default: 30)                     |
+| `thinking`         | bool/dict | Enable reasoning mode      | Provider-specific format                  |
+| `reasoning_effort` | string    | GPT-5 reasoning intensity  | "low", "medium", "high"                   |
+
+---
 
 ### Parameter Support by Provider
 
-| Parameter | OpenAI | DeepSeek | Qwen | Doubao | Notes |
-|-----------|--------|----------|------|---------|-------|
-| `temperature` | ✅ | ✅ | ✅ | ✅ | GPT-5 series limited to 1.0 |
-| `top_p` | ✅ | ✅ | ✅ | ✅ | Full support |
-| `max_tokens` | ✅ | ✅ | ✅ | ✅ | GPT-5 auto-converts to max_completion_tokens |
-| `timeout` | ✅ | ✅ | ✅ | ✅ | Full support |
-| `thinking` | ❌ | ✅ | ✅ | ✅ | Model-specific availability |
-| `reasoning_effort` | ✅ | ❌ | ❌ | ❌ | GPT-5 series only |
+| Parameter          | OpenAI | DeepSeek | Qwen | Doubao | Notes                                          |
+| ------------------ | ------ | -------- | ---- | ------ | ---------------------------------------------- |
+| `temperature`      | ✅      | ✅        | ✅    | ✅      | GPT-5 series limited to 1.0                    |
+| `top_p`            | ✅      | ✅        | ✅    | ✅      | Full support                                   |
+| `max_tokens`       | ✅      | ✅        | ✅    | ✅      | GPT-5 auto-converts to `max_completion_tokens` |
+| `timeout`          | ✅      | ✅        | ✅    | ✅      | Full support                                   |
+| `thinking`         | ❌      | ✅        | ✅    | ✅      | Model-specific availability                    |
+| `reasoning_effort` | ✅      | ❌        | ❌    | ❌      | GPT-5 only                                     |
+
+---
 
 ### Provider-Specific Notes
 
-#### OpenAI
-- **GPT-5 series**: Only support `temperature=1.0`, use `reasoning_effort` instead of `thinking`
-- **GPT-4.1**: Full parameter support
-- **Reasoning**: Use `reasoning_effort="high"` for complex problems
+**OpenAI**
 
-#### DeepSeek
-- **Thinking support**: Only `deepseek-reasoner` model
-- **Format**: `thinking=True`
-- **Best for**: Mathematical and logical reasoning
+* GPT-5 series: only supports `temperature=1.0`; use `reasoning_effort`.
+* GPT-4.1: full parameter support.
 
-#### Qwen
-- **Thinking support**: Only `qwen3-*` models (qwen3-max-preview, qwen3-coder-plus, qwen3-coder-flash)
-- **Format**: `thinking=True`
-- **Vision models**: qwen-vl-max, qwen-vl-plus support image processing
+**DeepSeek**
 
-#### Doubao
-- **Thinking support**: All models
-- **Format**: `thinking={"type": "enabled"}`
-- **Vision support**: doubao-seed-1-6-vision-250815
+* Thinking support only in `deepseek-reasoner` model (`thinking=True`).
 
-### Classes
+**Qwen**
 
-#### LLM
+* Thinking support only in `qwen3-*` models (qwen3-max-preview, qwen3-coder-plus, qwen3-coder-flash) 
+* Format: `thinking=True`
+* Vision models `qwen-vl-max`, `qwen-vl-plus` support image processing.
 
-Main interface for all LLM providers.
+**Doubao**
 
-```python
-llm = LLM(
-    model="model-name",
-    temperature=0.7,
-    max_tokens=100,
-    # ... other parameters
-)
-```
+* Thinking supported by all models (`thinking={"type": "enabled"}`).
+* Vision supported in `doubao-seed-1-6-vision-250815`.
 
-**Methods:**
-- `chat(messages, **kwargs)` → `ChatResponse`: Send messages and get response
-  - `reasoning_effort` (OpenAI GPT-5 only): "low", "medium", "high"
-
-#### ChatMessage
-
-Container for structured messages.
-
-```python
-message = ChatMessage(
-    role="user",  # "user", "assistant"
-    content="text or list of content items"
-)
-```
-
-#### ChatResponse
-
-Response object from LLM.
-
-**Attributes:**
-- `content`: Response text
-- `model`: Model used
-- `usage`: Token usage statistics
-- `finish_reason`: Completion reason
+---
 
 ### Utility Functions
 
-#### prepare_image_content(image_input)
-
-Prepares image content for vision models.
+* **prepare_image_content(image_input)**
 
 ```python
 # Local file
@@ -363,97 +349,72 @@ image_content = prepare_image_content("./image.jpg")
 image_content = prepare_image_content("https://example.com/image.jpg")
 ```
 
-#### test_connection()
 
-Quick connectivity test for available models.
-
-```python
-from provider_hub import test_connection
-test_connection()
-```
+---
 
 ## Supported Models
 
-### OpenAI
-- `gpt-5`
-- `gpt-5-mini`
-- `gpt-5-nano`
-- `gpt-4.1`
+**OpenAI**
 
-### DeepSeek  
-- `deepseek-chat`
-- `deepseek-reasoner`
+* gpt-5
+* gpt-5-mini
+* gpt-5-nano
+* gpt-4.1
 
-### Qwen
-- `qwen3-max-preview`
-- `qwen-plus`
-- `qwen-flash`
-- `qwen3-coder-plus`
-- `qwen3-coder-flash`
-- `qwen-vl-max`
-- `qwen-vl-plus`
+**DeepSeek**
 
-### Doubao
-- `doubao-seed-1-6-250615`
-- `doubao-seed-1-6-vision-250815`
-- `doubao-seed-1-6-flash-250828`
+* deepseek-chat
+* deepseek-reasoner
+
+**Qwen**
+
+* qwen3-max-preview
+* qwen-plus
+* qwen-flash
+* qwen3-coder-plus
+* qwen3-coder-flash
+* qwen-vl-max
+* qwen-vl-plus
+
+**Doubao**
+
+* doubao-seed-1-6-250615
+* doubao-seed-1-6-vision-250815
+* doubao-seed-1-6-flash-250828
+
+---
 
 ## Testing
 
-### Quick Test
-
-Test connectivity to available models:
-
-```python
-from provider_hub import test_connection
-test_connection()
-```
-
-### Comprehensive Test Suite
-
-Run full model testing with detailed reports:
+`-t`, `--test`
+Run full connection tests.
 
 ```bash
-python test_connection.py
+# Test all models
+provider-hub -t
+
+# Test one model
+provider-hub -t Doubao doubao-seed-1-6-250615
+
+# Test one model with reasoning (when supported)
+provider-hub -t Doubao doubao-seed-1-6-250615 -k
 ```
 
-This generates:
-- `test_report.json` - Machine-readable results
-- `test_report.md` - Human-readable report
+`-q`, `--quick-test`
+Run lightweight connectivity checks.
 
-### CLI: running provider tests
+```bash
+# Quick test all models
+provider-hub -q
 
-This project includes a small CLI entry point (`provider-hub`) to run provider connection tests from the repository.
+# Quick test a single provider
+provider-hub -q Doubao
+```
 
-Flags supported:
+`-k`, `--thinking`
+Enable reasoning mode during a test. Used together with `-t`.
 
-- `-t`, `--test`:
-    - No args: run the full test suite.
-    - Two args: run a single-model test: `provider model`.
-    - Example (run all):
-        ```powershell
-        provider-hub -t
-        ```
-    - Example (single model + disable thinking):
-        ```powershell
-        provider-hub -t Doubao doubao-seed-1-6-250615
-        ```
-    - Example (single model + enable thinking):
-        ```powershell
-        provider-hub -t Doubao doubao-seed-1-6-250615 -k
-        ```
-
-- `-q`, `--quick-test`:
-    - No args: run all quick tests.
-    - One arg: run quick tests for a single provider.
-    - Example (run all quick tests):
-        ```powershell
-        provider-hub -q
-        ```
-    - Example (quick test for Doubao):
-        ```powershell
-        provider-hub -q Doubao
-        ```
-
-- `-k`, `--thinking`:
-    - A boolean flag used together with a single-model `-t` invocation to enable provider "thinking" where supported.
+```bash
+# Test all models with reasoning
+provider-hub -t -k
+```

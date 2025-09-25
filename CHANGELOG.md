@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.1] - 2025-09-25
+
+### Removed
+- Deprecate test_connection, keep only CLI test connection
+
 ## [0.4.0] - 2025-09-25
 
 ### Added
