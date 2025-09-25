@@ -30,7 +30,9 @@ class LLM:
         thinking: Optional[Union[bool, str, Dict[str, Any]]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
         extra_body: Optional[Dict[str, Any]] = None,
-        system_prompt: Optional[Union[str, List[Dict[str, Any]]]] = None
+        system_prompt: Optional[Union[str, List[Dict[str, Any]]]] = None,
+        stream: Optional[bool] = False,
+        stream_options: Optional[Dict[str, Any]] = None
     ):
         if not provider:
             provider = EnvManager.get_provider_from_model(model)
@@ -53,7 +55,9 @@ class LLM:
             thinking=thinking,
             extra_headers=extra_headers,
             extra_body=extra_body,
-            system_prompt=system_prompt
+            system_prompt=system_prompt,
+            stream=stream,
+            stream_options=stream_options
         )
         
         provider_class = self.PROVIDER_MAPPING[provider]

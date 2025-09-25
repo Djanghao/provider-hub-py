@@ -52,6 +52,10 @@ class BaseLLMProvider(ABC):
             params["top_p"] = self.config.top_p
         if self.config.max_tokens is not None:
             params["max_tokens"] = self.config.max_tokens
+        if self.config.stream is True:
+            params["stream"] = self.config.stream
+        if self.config.stream_options is not None:
+            params["stream_options"] = self.config.stream_options
             
         params.update(kwargs)
         return params
