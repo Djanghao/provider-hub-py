@@ -207,11 +207,7 @@ This library provides two mechanisms for controlling streaming behavior when sup
     - `True`: The provider returns an iterator that yields partial chunk dictionaries as the model generates its response.
     - `False` (default): The provider returns a final `ChatResponse` object.
 - `stream_options` (dict[str, bool]): Additional options for streaming responses. Only set this when `stream=True`.
-    - **Qwen**:
-        - `{"include_usage": True}` → includes the total token usage in the last line of the output.
-    - **Doubao**:
-        - `{"include_usage": True}` → includes the total token usage in the last line of the output.
-        - `{"chunk_include_usage": True}` → includes the cumulative token usage in every chunk of the output.
+    - `{"include_usage": True}` → includes the total token usage in the last line of the output.
 
 Usage examples:
 
@@ -230,36 +226,15 @@ llm = LLM(
 )
 
 response = llm.chat("Hello, how are you?")
-for chunk in response:
-    for choice in chunk.choices:
-        if choice.delta.content:
-            print(chunk.model_dump_json())
+
 for chunk in response:
     if chunk.choices:
         for choice in chunk.choices:
-            # only print chunks that include response
             if choice.delta.content:
-                print(chunk.model_dump_json())
-    # Print the last line with total token usage
+                print(choice.delta.content, end='', flush=True)
+    # Print only total token usage data
     else:
-        print(chunk.model_dump_json())
-
-# # Or if you only want to flush out the response word by word:
-# for chunk in response:
-#     for choice in chunk.choices:
-#         if choice.delta.content:
-#             print(choice.delta.content, end='', flush=True)
-#             print()
-#     # Print only total token usage data
-#     else:
-#         print("\n", chunk.usage)
-```
-```response
-{"id":"0217588133559349544d93cbdf8c60805d428c33f3725821804f8","choices":[{"delta":{"content":"Hello","function_call":null,"role":"assistant","tool_calls":null,"reasoning_content":null},"finish_reason":null,"moderation_hit_type":null,"index":0,"logprobs":null}],"created":1758813356,"model":"doubao-seed-1-6-250615","service_tier":"default","object":"chat.completion.chunk","usage":null}
-{"id":"0217588133559349544d93cbdf8c60805d428c33f3725821804f8","choices":[{"delta":{"content":"!","function_call":null,"role":"assistant","tool_calls":null,"reasoning_content":null},"finish_reason":null,"moderation_hit_type":null,"index":0,"logprobs":null}],"created":1758813356,"model":"doubao-seed-1-6-250615","service_tier":"default","object":"chat.completion.chunk","usage":null}
-...
-{"id":"0217588133559349544d93cbdf8c60805d428c33f3725821804f8","choices":[{"delta":{"content":" 😊","function_call":null,"role":"assistant","tool_calls":null,"reasoning_content":null},"finish_reason":null,"moderation_hit_type":null,"index":0,"logprobs":null}],"created":1758813356,"model":"doubao-seed-1-6-250615","service_tier":"default","object":"chat.completion.chunk","usage":null}
-{"id":"0217588133559349544d93cbdf8c60805d428c33f3725821804f8","choices":[],"created":1758813356,"model":"doubao-seed-1-6-250615","service_tier":null,"object":"chat.completion.chunk","usage":{"completion_tokens":124,"prompt_tokens":90,"total_tokens":214,"prompt_tokens_details":{"cached_tokens":0,"provisioned_tokens":null},"completion_tokens_details":{"reasoning_tokens":106,"provisioned_tokens":null}}}
+        print("\n", chunk.usage)
 ```
 
 Note:
