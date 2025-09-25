@@ -1,0 +1,33 @@
+# Changelog
+
+## [0.4.0] - 2025-09-25
+
+### Added
+- Multi-image support for vision models - process multiple images in a single request
+- Streaming output support for real-time response generation
+- System prompt support - configure system prompts during session initialization
+- Connection testing CLI commands (`-t/--test` and `-q/--quick-test`)
+- Thinking mode flag (`-k/--thinking`) for models that support reasoning
+- Comprehensive test connection methods for different providers and models
+
+### Changed
+- Improved CLI argument handling with proper long-form flags
+- Extended session model with system prompt field
+
+## [0.3.0] - 2025-09-12
+
+### Fixed
+- OpenAI GPT-5 temperature handling and reasoning token display
+- Test infrastructure and token limits
+
+## [0.2.0] - 2025-09-12
+
+### Added
+- Enhanced provider interface
+
+## [0.1.0] - 2025-09-06
+
+### Added
+- Initial release with unified LLM provider interface
+- Multi-agent system support
+- CLI interface
