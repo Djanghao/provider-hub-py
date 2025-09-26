@@ -11,7 +11,7 @@ class QwenProvider(BaseLLMProvider):
         "qwen3-coder-plus", "qwen3-coder-flash",
         "qwen-vl-max", "qwen-vl-plus", "qwen3-max",
         "qwen3-vl-plus", "qwen3-omni-flash", 
-        "qwen3-235b-a22b", "qwen3-vl-235b-a22b-instruct"
+        "qwen3-235b-a22b", "qwen3-vl-235b-a22b-thinking"
     ]
     
     BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
