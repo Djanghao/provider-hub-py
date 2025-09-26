@@ -392,6 +392,11 @@ test_connection()
 - `qwen3-coder-flash`
 - `qwen-vl-max`
 - `qwen-vl-plus`
+- `qwen3-max`
+- `qwen3-vl-plus`
+- `qwen3-omni-flash`
+- `qwen3-235b-a22b`
+- `qwen3-vl-235b-a22b-thinking`
 
 ### Doubao
 - `doubao-seed-1-6-250615`
