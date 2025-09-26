@@ -2,9 +2,9 @@ from setuptools import setup, find_packages
 
 setup(
     name="provider_hub",
-    version="0.3.0",
+    version="0.4.1",
     description="Unified LLM provider interface for multi-agent systems",
-    author="Houston Zhang",
+    author="Djanghao",
     packages=find_packages(),
     install_requires=[
         "openai>=1.0.0",
