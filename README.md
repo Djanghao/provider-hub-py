@@ -356,36 +356,38 @@ image_content = prepare_image_content("https://example.com/image.jpg")
 
 **OpenAI**
 
-- `gpt-5`
-- `gpt-5-mini`
-- `gpt-5-nano`
-- `gpt-4.1`
+* gpt-5
+* gpt-5-mini
+* gpt-5-nano
+* gpt-4.1
 
 **DeepSeek**
 
-- `deepseek-chat`
-- `deepseek-reasoner`
+* deepseek-chat
+* deepseek-reasoner
 
 **Qwen**
 
-- `qwen3-max-preview`
-- `qwen-plus`
-- `qwen-flash`
-- `qwen3-coder-plus`
-- `qwen3-coder-flash`
-- `qwen-vl-max`
-- `qwen-vl-plus`
-- `qwen3-max`
-- `qwen3-vl-plus`
-- `qwen3-omni-flash`
-- `qwen3-235b-a22b`
-- `qwen3-vl-235b-a22b-thinking`
+* qwen3-max-preview
+* qwen-plus
+* qwen-flash
+* qwen3-coder-plus
+* qwen3-coder-flash
+* qwen-vl-max
+* qwen-vl-plus
+* qwen3-max
+* qwen3-vl-plus
+* qwen3-omni-flash
+* qwen3-235b-a22b
+* qwen3-vl-235b-a22b-thinking
 
 **Doubao**
 
-- `doubao-seed-1-6-250615`
-- `doubao-seed-1-6-vision-250815`
-- `doubao-seed-1-6-flash-250828`
+* doubao-seed-1-6-250615
+* doubao-seed-1-6-vision-250815
+* doubao-seed-1-6-flash-250828
+
+---
 
 ## Testing
 
