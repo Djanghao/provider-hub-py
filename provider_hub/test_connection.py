@@ -32,6 +32,9 @@ def test_all_text_models(provider=None, model=None):
         {"model": "deepseek-chat", "provider": "DeepSeek", "type": "chat"},
         {"model": "deepseek-reasoner", "provider": "DeepSeek", "type": "reasoning"},
         {"model": "qwen3-max-preview", "provider": "Qwen", "type": "chat"},
+        {"model": "qwen3-max", "provider": "Qwen", "type": "chat"},
+        {"model": "qwen3-omni-flash", "provider": "Qwen", "type": "chat"},
+        {"model": "qwen3-235b-a22b", "provider": "Qwen", "type": "chat"},
         {"model": "qwen-plus", "provider": "Qwen", "type": "chat"},
         {"model": "qwen-flash", "provider": "Qwen", "type": "chat"},
         {"model": "qwen3-coder-plus", "provider": "Qwen", "type": "coding"},
@@ -57,6 +60,12 @@ def test_all_text_models(provider=None, model=None):
         
         try:
             print(f"Testing {model_info['provider']} {model_info['model']} ({model_info['type']})...")
+
+            stream = False
+            stream_options = None
+            if model_info['model'] == "qwen3-omni-flash" or model_info['model'] == "qwen3-235b-a22b":
+                stream = True
+                stream_options = {"include_usage": True}
             
             # Set token limits based on model type
             max_tokens = 50
@@ -74,7 +83,9 @@ def test_all_text_models(provider=None, model=None):
                 "model": model_info['model'],
                 "temperature": 0.7,
                 "max_tokens": max_tokens,
-                "timeout": 15
+                "timeout": 15,
+                "stream": stream,
+                "stream_options": stream_options
             }
             
             # Enable thinking for reasoner models
@@ -91,6 +102,20 @@ def test_all_text_models(provider=None, model=None):
                 prompt = "Hello, respond in one sentence"
             
             response = llm.chat(prompt)
+            
+            if stream:
+                response_content = ""
+                response_usage = []
+                for chunk in response:
+                    if chunk.choices:
+                        for choice in chunk.choices:
+                            if choice.delta.content:
+                                response_content += choice.delta.content
+                    else:
+                        response_usage = chunk.usage.model_dump()
+                response.content = response_content
+                response.usage = response_usage
+            
             result["status"] = "success"
             result["response_preview"] = response.content[:100]
             if response.usage:
@@ -119,6 +144,8 @@ def test_all_vision_models(provider=None, model=None):
         {"model": "gpt-4.1", "provider": "OpenAI"},
         {"model": "qwen-vl-max", "provider": "Qwen"},
         {"model": "qwen-vl-plus", "provider": "Qwen"},
+        {"model": "qwen3-vl-plus", "provider": "Qwen"},
+        {"model": "qwen3-vl-235b-a22b-thinking", "provider": "Qwen"},
         {"model": "doubao-seed-1-6-vision-250815", "provider": "Doubao"},
     ]
     
@@ -152,12 +179,23 @@ def test_all_vision_models(provider=None, model=None):
         
         try:
             print(f"Testing {model_info['provider']} {model_info['model']} (vision)...")
+
+            stream = False
+            thinking = None
+            stream_options = None
+            if model_info['model'] == "qwen3-vl-plus" or model_info['model'] == "qwen3-vl-235b-a22b-thinking":
+                thinking = True
+                stream = True
+                stream_options = {"include_usage": True}
             
             llm = LLM(
                 model=model_info['model'],
                 temperature=0.7,
                 max_tokens=80,
-                timeout=20
+                timeout=20,
+                thinking=thinking,
+                stream=stream,
+                stream_options=stream_options
             )
             
             image_content = prepare_image_content(image_path)
@@ -170,6 +208,20 @@ def test_all_vision_models(provider=None, model=None):
             )]
             
             response = llm.chat(messages)
+
+            if stream:
+                response_content = ""
+                response_usage = []
+                for chunk in response:
+                    if chunk.choices:
+                        for choice in chunk.choices:
+                            if choice.delta.content:
+                                response_content += choice.delta.content
+                    else:
+                        response_usage = chunk.usage.model_dump()
+                response.content = response_content
+                response.usage = response_usage
+
             result["status"] = "success"
             result["response_preview"] = response.content[:100]
             if response.usage:
@@ -197,6 +249,9 @@ def test_thinking_modes(provider=None, model=None, enableThinking=True):
     thinking_models = [
         {"model": "deepseek-reasoner", "provider": "DeepSeek", "thinking": True},
         {"model": "qwen3-max-preview", "provider": "Qwen", "thinking": True},
+        {"model": "qwen3-max", "provider": "Qwen", "thinking": True},
+        {"model": "qwen3-omni-flash", "provider": "Qwen", "thinking": True},
+        {"model": "qwen3-235b-a22b", "provider": "Qwen", "thinking": True},
         {"model": "doubao-seed-1-6-250615", "provider": "Doubao", "thinking": {"type": "enabled"}},
     ]
     
@@ -217,6 +272,12 @@ def test_thinking_modes(provider=None, model=None, enableThinking=True):
         
         try:
             print(f"Testing {model_info['provider']} {model_info['model']} (thinking mode)...")
+
+            stream = False
+            stream_options = None
+            if model_info['model'] == "qwen3-omni-flash" or model_info['model'] == "qwen3-235b-a22b":
+                stream = True
+                stream_options = {"include_usage": True}
             
             # Set higher token limits for thinking models
             max_tokens = 250
@@ -238,10 +299,26 @@ def test_thinking_modes(provider=None, model=None, enableThinking=True):
                 model=model_info['model'],
                 thinking=model_info['thinking'],
                 max_tokens=max_tokens,
-                timeout=25
+                timeout=25,
+                stream=stream,
+                stream_options=stream_options
             )
             
             response = llm.chat("Calculate 12 * 15 step by step")
+
+            if stream:
+                response_content = ""
+                response_usage = []
+                for chunk in response:
+                    if chunk.choices:
+                        for choice in chunk.choices:
+                            if choice.delta.content:
+                                response_content += choice.delta.content
+                    else:
+                        response_usage = chunk.usage.model_dump()
+                response.content = response_content
+                response.usage = response_usage
+
             result["status"] = "success"
             result["response_preview"] = response.content[:100]
             if response.usage:
@@ -346,6 +423,9 @@ def test_connection(provider=None, model=None, enableThinking=True):
     thinking_models = [
         {"model": "deepseek-reasoner", "provider": "DeepSeek", "thinking": True},
         {"model": "qwen3-max-preview", "provider": "Qwen", "thinking": True},
+        {"model": "qwen3-max", "provider": "Qwen", "thinking": True},
+        {"model": "qwen3-omni-flash", "provider": "Qwen", "thinking": True},
+        {"model": "qwen3-235b-a22b", "provider": "Qwen", "thinking": True},
         {"model": "doubao-seed-1-6-250615", "provider": "Doubao", "thinking": {"type": "enabled"}},
     ]
     text_models = [
@@ -356,6 +436,9 @@ def test_connection(provider=None, model=None, enableThinking=True):
         {"model": "deepseek-chat", "provider": "DeepSeek", "type": "chat"},
         {"model": "deepseek-reasoner", "provider": "DeepSeek", "type": "reasoning"},
         {"model": "qwen3-max-preview", "provider": "Qwen", "type": "chat"},
+        {"model": "qwen3-max", "provider": "Qwen", "type": "chat"},
+        {"model": "qwen3-omni-flash", "provider": "Qwen", "type": "chat"},
+        {"model": "qwen3-235b-a22b", "provider": "Qwen", "type": "chat"},
         {"model": "qwen-plus", "provider": "Qwen", "type": "chat"},
         {"model": "qwen-flash", "provider": "Qwen", "type": "chat"},
         {"model": "qwen3-coder-plus", "provider": "Qwen", "type": "coding"},
@@ -367,6 +450,8 @@ def test_connection(provider=None, model=None, enableThinking=True):
         {"model": "gpt-4.1", "provider": "OpenAI"},
         {"model": "qwen-vl-max", "provider": "Qwen"},
         {"model": "qwen-vl-plus", "provider": "Qwen"},
+        {"model": "qwen3-vl-plus", "provider": "Qwen"},
+        {"model": "qwen3-vl-235b-a22b-thinking", "provider": "Qwen"},
         {"model": "doubao-seed-1-6-vision-250815", "provider": "Doubao"},
     ]
 

@@ -375,6 +375,11 @@ image_content = prepare_image_content("https://example.com/image.jpg")
 * qwen3-coder-flash
 * qwen-vl-max
 * qwen-vl-plus
+* qwen3-max
+* qwen3-vl-plus
+* qwen3-omni-flash
+* qwen3-235b-a22b
+* qwen3-vl-235b-a22b-thinking
 
 **Doubao**
 
