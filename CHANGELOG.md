@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.2] - 2025-10-2
+
+### Added
+- New Qwen3 models
+- Connection tests for new models
+
+### Fixed
+- Streaming option in Qwen and Doubao provider
+
 ## [0.4.1] - 2025-09-25
 
 ### Removed
