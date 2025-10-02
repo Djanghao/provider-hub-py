@@ -7,7 +7,7 @@ from ..providers.qwen import QwenProvider
 from ..providers.doubao import DoubaoProvider
 from ..providers.openai_compatible import OpenAICompatibleProvider
 from ..utils.env import EnvManager
-from ..exceptions import ProviderNotSupportedError, ModelNotSupportedError, APIKeyNotFoundError
+from ..exceptions import ProviderNotSupportedError, ModelNotSupportedError, APIKeyNotFoundError, BaseUrlNotFoundError
 
 class LLM:
     PROVIDER_MAPPING = {
@@ -37,8 +37,10 @@ class LLM:
         stream_options: Optional[Dict[str, Any]] = None
     ):
         if provider == "openai_compatible":
-            if not api_key or not base_url:
-                raise APIKeyNotFoundError(f"Api key or base url for provider {provider} is not found")
+            if not api_key:
+                raise APIKeyNotFoundError(f"Api key or base url for provider: {provider} is not found")
+            if not base_url:
+                raise BaseUrlNotFoundError(f"Base url for provider: {provider} is not found")
         else:
             if not provider:
                 provider = EnvManager.get_provider_from_model(model)

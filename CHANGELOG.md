@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.0] - 2025-10-02
+
+### Added
+- Self-hosted model support - supply valid `model`, `base_url`, and `api_key`
+
 ## [0.4.2] - 2025-10-2
 
 ### Added
