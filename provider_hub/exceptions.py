@@ -10,6 +10,9 @@ class ModelNotSupportedError(ProviderHubError):
 class APIKeyNotFoundError(ProviderHubError):
     pass
 
+class BaseUrlNotFoundError(ProviderHubError):
+    pass
+
 class ProviderConnectionError(ProviderHubError):
     pass
 

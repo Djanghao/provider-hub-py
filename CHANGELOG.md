@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.0] - 2025-10-02
+
+### Added
+- Add OpenAI-compatible provider for custom OpenAI API endpoints
+
 ## [0.4.2] - 2025-10-2
 
 ### Added

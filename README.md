@@ -335,6 +335,11 @@ print(response.content)
 * Thinking supported by all models (`thinking={"type": "enabled"}`).
 * Vision supported in `doubao-seed-1-6-vision-250815`.
 
+**OpenAI_Compatible**
+
+* Use your self-hosted model with this provider by supplying valid `model`, `provider`, `base_url`, and `api_key`.
+* This provider requires `base_url` and `api_key` at initialization.
+
 ---
 
 ### Utility Functions

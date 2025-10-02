@@ -5,15 +5,17 @@ from ..providers.openai import OpenAIProvider
 from ..providers.deepseek import DeepSeekProvider
 from ..providers.qwen import QwenProvider
 from ..providers.doubao import DoubaoProvider
+from ..providers.openai_compatible import OpenAICompatibleProvider
 from ..utils.env import EnvManager
-from ..exceptions import ProviderNotSupportedError, ModelNotSupportedError
+from ..exceptions import ProviderNotSupportedError, ModelNotSupportedError, APIKeyNotFoundError, BaseUrlNotFoundError
 
 class LLM:
     PROVIDER_MAPPING = {
         "openai": OpenAIProvider,
         "deepseek": DeepSeekProvider,
         "qwen": QwenProvider,
-        "doubao": DoubaoProvider
+        "doubao": DoubaoProvider,
+        "openai_compatible": OpenAICompatibleProvider
     }
 
     def __init__(
@@ -34,14 +36,20 @@ class LLM:
         stream: Optional[bool] = False,
         stream_options: Optional[Dict[str, Any]] = None
     ):
-        if not provider:
-            provider = EnvManager.get_provider_from_model(model)
-            
-        if provider not in self.PROVIDER_MAPPING:
-            raise ProviderNotSupportedError(f"Provider {provider} is not supported")
-            
-        if not api_key:
-            api_key = EnvManager.auto_detect_api_key(model)
+        if provider == "openai_compatible":
+            if not api_key:
+                raise APIKeyNotFoundError(f"Api key or base url for provider: {provider} is not found")
+            if not base_url:
+                raise BaseUrlNotFoundError(f"Base url for provider: {provider} is not found")
+        else:
+            if not provider:
+                provider = EnvManager.get_provider_from_model(model)
+                
+            if provider not in self.PROVIDER_MAPPING:
+                raise ProviderNotSupportedError(f"Provider {provider} is not supported")
+                
+            if not api_key:
+                api_key = EnvManager.auto_detect_api_key(model)
             
         config = LLMConfig(
             model=model,
@@ -63,7 +71,7 @@ class LLM:
         provider_class = self.PROVIDER_MAPPING[provider]
         self.provider: BaseLLMProvider = provider_class(config)
         
-        if model not in self.provider.get_supported_models():
+        if provider != "openai_compatible" and model not in self.provider.get_supported_models():
             raise ModelNotSupportedError(f"Model {model} is not supported by {provider}")
 
     def chat(self, messages: Union[str, List[ChatMessage]], **kwargs) -> ChatResponse:
