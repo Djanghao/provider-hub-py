@@ -45,10 +45,13 @@ class QwenProvider(BaseLLMProvider):
             
             if self._is_thinking_enabled():
                 extra_body = params.get("extra_body", {})
+                if self._is_vl_high_resolution_images_enabled():
+                    extra_body["enable_vl_high_resolution_images"] = True
                 if isinstance(self.config.thinking, bool):
                     extra_body["enable_thinking"] = self.config.thinking
                 params["extra_body"] = extra_body
             
+
             return self._sync_chat(formatted_messages, params)
                 
         except Exception as e:
@@ -58,6 +61,12 @@ class QwenProvider(BaseLLMProvider):
         return (
             self.config.thinking is not None and 
             self.config.model.startswith("qwen3")
+        )
+
+    def _is_vl_high_resolution_images_enabled(self) -> bool:
+        return (
+            self.config.vl_high_resolution_images and 
+            (self.config.model.startswith("qwen3-vl") or self.config.model.startswith("qwen-vl-max") or self.config.model.startswith("qwen-vl-plus"))
         )
 
     def _sync_chat(self, messages: List[Dict[str, Any]], params: Dict[str, Any]) -> ChatResponse:

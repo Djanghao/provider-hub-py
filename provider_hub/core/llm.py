@@ -34,7 +34,8 @@ class LLM:
         extra_body: Optional[Dict[str, Any]] = None,
         system_prompt: Optional[Union[str, List[Dict[str, Any]]]] = None,
         stream: Optional[bool] = False,
-        stream_options: Optional[Dict[str, Any]] = None
+        stream_options: Optional[Dict[str, Any]] = None,
+        vl_high_resolution_images: Optional[bool] = True
     ):
         if provider == "openai_compatible":
             if not api_key:
@@ -65,7 +66,8 @@ class LLM:
             extra_body=extra_body,
             system_prompt=system_prompt,
             stream=stream,
-            stream_options=stream_options
+            stream_options=stream_options,
+            vl_high_resolution_images=vl_high_resolution_images
         )
         
         provider_class = self.PROVIDER_MAPPING[provider]

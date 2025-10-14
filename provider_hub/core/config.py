@@ -17,6 +17,7 @@ class LLMConfig:
     system_prompt: Optional[Union[str, List[Dict[str, Any]]]] = None
     stream: Optional[bool] = False
     stream_options: Optional[Dict[str, Any]] = None
+    vl_high_resolution_images: Optional[bool] = True
 
 @dataclass  
 class ChatMessage:
