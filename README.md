@@ -251,6 +251,10 @@ for chunk in response:
     # Print only total token usage data
     else:
         print("\n", chunk.usage)
+
+# If using Gemini:
+for chunk in response:
+    print(chunk.text, end="")
 ```
 
 **Notes:**
