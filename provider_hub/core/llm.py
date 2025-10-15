@@ -6,6 +6,7 @@ from ..providers.deepseek import DeepSeekProvider
 from ..providers.qwen import QwenProvider
 from ..providers.doubao import DoubaoProvider
 from ..providers.openai_compatible import OpenAICompatibleProvider
+from ..providers.gemini import GeminiProvider
 from ..utils.env import EnvManager
 from ..exceptions import ProviderNotSupportedError, ModelNotSupportedError, APIKeyNotFoundError, BaseUrlNotFoundError
 
@@ -15,6 +16,7 @@ class LLM:
         "deepseek": DeepSeekProvider,
         "qwen": QwenProvider,
         "doubao": DoubaoProvider,
+        "gemini": GeminiProvider,
         "openai_compatible": OpenAICompatibleProvider
     }
 
@@ -34,7 +36,8 @@ class LLM:
         extra_body: Optional[Dict[str, Any]] = None,
         system_prompt: Optional[Union[str, List[Dict[str, Any]]]] = None,
         stream: Optional[bool] = False,
-        stream_options: Optional[Dict[str, Any]] = None
+        stream_options: Optional[Dict[str, Any]] = None,
+        vl_high_resolution_images: Optional[bool] = True
     ):
         if provider == "openai_compatible":
             if not api_key:
@@ -65,7 +68,8 @@ class LLM:
             extra_body=extra_body,
             system_prompt=system_prompt,
             stream=stream,
-            stream_options=stream_options
+            stream_options=stream_options,
+            vl_high_resolution_images=vl_high_resolution_images
         )
         
         provider_class = self.PROVIDER_MAPPING[provider]

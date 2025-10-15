@@ -7,7 +7,7 @@ from ..exceptions import APIKeyNotFoundError, ProviderConnectionError
 
 class OpenAIProvider(BaseLLMProvider):
     SUPPORTED_MODELS = [
-        "gpt-5", "gpt-5-mini", "gpt-5-nano", "gpt-4.1"
+        "gpt-5", "gpt-5-mini", "gpt-5-nano", "gpt-4.1", "gpt-4o"
     ]
 
     def __init__(self, config: LLMConfig):
@@ -53,6 +53,9 @@ class OpenAIProvider(BaseLLMProvider):
             **params
         )
         
+        if params.get("stream") is True:
+            return response
+
         message_content = response.choices[0].message.content or ''
         reasoning_tokens = getattr(response.usage.completion_tokens_details, 'reasoning_tokens', 0) if response.usage and hasattr(response.usage, 'completion_tokens_details') else 0
         
