@@ -6,6 +6,7 @@ from ..providers.deepseek import DeepSeekProvider
 from ..providers.qwen import QwenProvider
 from ..providers.doubao import DoubaoProvider
 from ..providers.openai_compatible import OpenAICompatibleProvider
+from ..providers.gemini import GeminiProvider
 from ..utils.env import EnvManager
 from ..exceptions import ProviderNotSupportedError, ModelNotSupportedError, APIKeyNotFoundError, BaseUrlNotFoundError
 
@@ -15,6 +16,7 @@ class LLM:
         "deepseek": DeepSeekProvider,
         "qwen": QwenProvider,
         "doubao": DoubaoProvider,
+        "gemini": GeminiProvider,
         "openai_compatible": OpenAICompatibleProvider
     }
 

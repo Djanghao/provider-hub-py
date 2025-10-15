@@ -9,7 +9,8 @@ class EnvManager:
         "openai": "OPENAI_API_KEY",
         "deepseek": "DEEPSEEK_API_KEY", 
         "qwen": "DASHSCOPE_API_KEY",
-        "doubao": "ARK_API_KEY"
+        "doubao": "ARK_API_KEY",
+        "gemini": "GEMINI_API_KEY"
     }
     
     @classmethod
@@ -25,6 +26,8 @@ class EnvManager:
             return "openai"
         elif model.startswith("deepseek"):
             return "deepseek"
+        elif model.startswith("gemini"):
+            return "gemini"
         elif model.startswith("qwen"):
             return "qwen"
         elif model.startswith("doubao"):

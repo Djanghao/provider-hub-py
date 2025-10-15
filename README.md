@@ -34,6 +34,7 @@ OPENAI_API_KEY=your-openai-api-key
 DEEPSEEK_API_KEY=your-deepseek-api-key
 DASHSCOPE_API_KEY=your-qwen-api-key
 ARK_API_KEY=your-doubao-api-key
+GEMINI_API_KEY=your-gemini-api-key-here
 ```
 
 ### 2. Basic Usage
@@ -215,8 +216,6 @@ print(response2.content)
 
 ### Streaming Mode
 
-**Only supported by Doubao and Qwen models.**
-
 This library provides two mechanisms for controlling streaming:
 
 * `stream` (bool):
@@ -297,19 +296,23 @@ print(response.content)
 | `timeout`          | int       | Request timeout            | Seconds (default: 30)                     |
 | `thinking`         | bool/dict | Enable reasoning mode      | Provider-specific format                  |
 | `reasoning_effort` | string    | GPT-5 reasoning intensity  | "low", "medium", "high"                   |
+| `stream`           | bool      | Enable streaming responses | True, False                               |
+| `stream_options`   | dict      | Options for streaming      | Provider-specific format                  |
 
 ---
 
 ### Parameter Support by Provider
 
-| Parameter          | OpenAI | DeepSeek | Qwen | Doubao | Notes                                          |
-| ------------------ | ------ | -------- | ---- | ------ | ---------------------------------------------- |
-| `temperature`      | ✅      | ✅        | ✅    | ✅      | GPT-5 series limited to 1.0                    |
-| `top_p`            | ✅      | ✅        | ✅    | ✅      | Full support                                   |
-| `max_tokens`       | ✅      | ✅        | ✅    | ✅      | GPT-5 auto-converts to `max_completion_tokens` |
-| `timeout`          | ✅      | ✅        | ✅    | ✅      | Full support                                   |
-| `thinking`         | ❌      | ✅        | ✅    | ✅      | Model-specific availability                    |
-| `reasoning_effort` | ✅      | ❌        | ❌    | ❌      | GPT-5 only                                     |
+| Parameter          | OpenAI | DeepSeek | Qwen | Doubao | Gemini | Notes                                          |
+| ------------------ | ------ | -------- | ---- | ------ | ------ | ---------------------------------------------- |
+| `temperature`      | ✅      | ✅        | ✅    | ✅      | ✅      | GPT-5 series limited to 1.0                    |
+| `top_p`            | ✅      | ✅        | ✅    | ✅      | ✅      | Full support                                   |
+| `max_tokens`       | ✅      | ✅        | ✅    | ✅      | ✅      | GPT-5 auto-converts to `max_completion_tokens` |
+| `timeout`          | ✅      | ✅        | ✅    | ✅      | ❌      | Full support                                   |
+| `thinking`         | ❌      | ✅        | ✅    | ✅      | ✅      | Model-specific availability                    |
+| `reasoning_effort` | ✅      | ❌        | ❌    | ❌      | ❌      | GPT-5 only                                     |
+| `stream`           | ✅      | ✅        | ✅    | ✅      | ✅      | Full support                                   |
+| `stream_options`   | ✅      | ✅        | ✅    | ✅      | ✅      | Provider-specific format                       |
 
 ---
 
@@ -339,6 +342,12 @@ print(response.content)
 
 * Use your self-hosted model with this provider by supplying valid `model`, `provider`, `base_url`, and `api_key`.
 * This provider requires `base_url` and `api_key` at initialization.
+
+**Gemini**
+
+* Gemini-2.5-Flash and Pro models have "thinking" enabled by default to enhance quality. When using 2.5-Flash, you can disable thinking by setting the thinking budget to zero, but 2.5-Pro only works in thinking mode.
+* Gemini-2.0 models does not support thinking.
+* Gemini models does not support `stream_options`.
 
 ---
 
@@ -391,6 +400,14 @@ image_content = prepare_image_content("https://example.com/image.jpg")
 * doubao-seed-1-6-250615
 * doubao-seed-1-6-vision-250815
 * doubao-seed-1-6-flash-250828
+
+**Gemini**
+
+* gemini-2.5-pro
+* gemini-2.5-flash
+* gemini-2.5-flash-lite
+* gemini-2.0-flash
+* gemini-2.0-flash-lite
 
 ---
 

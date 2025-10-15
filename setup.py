@@ -11,6 +11,7 @@ setup(
         "volcengine-python-sdk[ark]>=1.0.0",
         "python-dotenv>=0.19.0",
         "tenacity>=8.0.0",
+        "google-genai>=0.3.0",
     ],
     python_requires=">=3.7",
     classifiers=[

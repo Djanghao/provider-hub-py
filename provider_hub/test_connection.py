@@ -2,6 +2,13 @@ import sys
 import os
 sys.path.append('..')
 
+# Ensure UTF-8 output to avoid UnicodeEncodeError on Windows consoles
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+except Exception:
+    pass
+
 from dotenv import load_dotenv
 from provider_hub import LLM, ChatMessage, prepare_image_content
 import json
@@ -41,6 +48,11 @@ def test_all_text_models(provider=None, model=None):
         {"model": "qwen3-coder-flash", "provider": "Qwen", "type": "coding"},
         {"model": "doubao-seed-1-6-250615", "provider": "Doubao", "type": "chat"},
         {"model": "doubao-seed-1-6-flash-250828", "provider": "Doubao", "type": "chat"},
+        {"model": "gemini-2.5-pro", "provider": "Gemini", "type": "chat"},
+        {"model": "gemini-2.5-flash", "provider": "Gemini", "type": "chat"},
+        {"model": "gemini-2.5-flash-lite", "provider": "Gemini", "type": "chat"},
+        {"model": "gemini-2.0-flash", "provider": "Gemini", "type": "chat"},
+        {"model": "gemini-2.0-flash-lite", "provider": "Gemini", "type": "chat"},
     ]
     
     for model_info in all_models:
@@ -78,6 +90,8 @@ def test_all_text_models(provider=None, model=None):
                     max_tokens = 200
             elif model_info['model'] == 'deepseek-reasoner':
                 max_tokens = 400
+            elif model_info["model"].startswith("gemini"):
+                max_tokens = 1500
             
             config = {
                 "model": model_info['model'],
@@ -147,6 +161,7 @@ def test_all_vision_models(provider=None, model=None):
         {"model": "qwen3-vl-plus", "provider": "Qwen"},
         {"model": "qwen3-vl-235b-a22b-thinking", "provider": "Qwen"},
         {"model": "doubao-seed-1-6-vision-250815", "provider": "Doubao"},
+        {"model": "gemini-2.5-flash", "provider": "Gemini"},
     ]
     
     # Try multiple possible image paths
@@ -188,10 +203,14 @@ def test_all_vision_models(provider=None, model=None):
                 stream = True
                 stream_options = {"include_usage": True}
             
+            max_tokens = 80
+            if model_info["model"] == "gemini-2.5-flash":
+                max_tokens = 1500
+
             llm = LLM(
                 model=model_info['model'],
                 temperature=0.7,
-                max_tokens=80,
+                max_tokens=max_tokens,
                 timeout=20,
                 thinking=thinking,
                 stream=stream,
@@ -253,6 +272,9 @@ def test_thinking_modes(provider=None, model=None, enableThinking=True):
         {"model": "qwen3-omni-flash", "provider": "Qwen", "thinking": True},
         {"model": "qwen3-235b-a22b", "provider": "Qwen", "thinking": True},
         {"model": "doubao-seed-1-6-250615", "provider": "Doubao", "thinking": {"type": "enabled"}},
+        {"model": "gemini-2.5-pro", "provider": "Gemini", "thinking": True},
+        {"model": "gemini-2.5-flash", "provider": "Gemini", "thinking": True},
+        {"model": "gemini-2.5-flash-lite", "provider": "Gemini", "thinking": True},
     ]
     
     for model_info in thinking_models:
@@ -285,6 +307,8 @@ def test_thinking_modes(provider=None, model=None, enableThinking=True):
                 max_tokens = 400
             elif model_info['model'] == 'doubao-seed-1-6-250615':
                 max_tokens = 350
+            elif model_info['model'].startswith('gemini-2.5'):
+                max_tokens = 1500
                 
             if not enableThinking:
                 if provider == "Doubao":
@@ -357,10 +381,10 @@ def generate_report():
         "overall": {"total": total_text + total_vision + total_thinking, "success": success_text + success_vision + success_thinking}
     }
     
-    with open("test_report.json", "w") as f:
-        json.dump(test_results, f, indent=2)
+    with open("test_report.json", "w", encoding="utf-8") as f:
+        json.dump(test_results, f, indent=2, ensure_ascii=False)
     
-    with open("test_report.md", "w") as f:
+    with open("test_report.md", "w", encoding="utf-8") as f:
         f.write("# Provider Hub Test Report\n\n")
         f.write(f"**Test Date**: {test_results['timestamp']}\n\n")
         f.write("## Summary\n\n")
@@ -427,6 +451,9 @@ def test_connection(provider=None, model=None, enableThinking=True):
         {"model": "qwen3-omni-flash", "provider": "Qwen", "thinking": True},
         {"model": "qwen3-235b-a22b", "provider": "Qwen", "thinking": True},
         {"model": "doubao-seed-1-6-250615", "provider": "Doubao", "thinking": {"type": "enabled"}},
+        {"model": "gemini-2.5-pro", "provider": "Gemini", "thinking": True},
+        {"model": "gemini-2.5-flash", "provider": "Gemini", "thinking": True},
+        {"model": "gemini-2.5-flash-lite", "provider": "Gemini", "thinking": True},
     ]
     text_models = [
         {"model": "gpt-5", "provider": "OpenAI", "type": "chat"},
@@ -445,6 +472,11 @@ def test_connection(provider=None, model=None, enableThinking=True):
         {"model": "qwen3-coder-flash", "provider": "Qwen", "type": "coding"},
         {"model": "doubao-seed-1-6-250615", "provider": "Doubao", "type": "chat"},
         {"model": "doubao-seed-1-6-flash-250828", "provider": "Doubao", "type": "chat"},
+        {"model": "gemini-2.5-pro", "provider": "Gemini", "type": "chat"},
+        {"model": "gemini-2.5-flash", "provider": "Gemini", "type": "chat"},
+        {"model": "gemini-2.5-flash-lite", "provider": "Gemini", "type": "chat"},
+        {"model": "gemini-2.0-flash", "provider": "Gemini", "type": "chat"},
+        {"model": "gemini-2.0-flash-lite", "provider": "Gemini", "type": "chat"},
     ]
     vision_models = [
         {"model": "gpt-4.1", "provider": "OpenAI"},
@@ -453,6 +485,7 @@ def test_connection(provider=None, model=None, enableThinking=True):
         {"model": "qwen3-vl-plus", "provider": "Qwen"},
         {"model": "qwen3-vl-235b-a22b-thinking", "provider": "Qwen"},
         {"model": "doubao-seed-1-6-vision-250815", "provider": "Doubao"},
+        {"model": "gemini-2.5-flash", "provider": "Gemini"},
     ]
 
     print("🔥 Provider Hub - Complete Model Testing")
@@ -497,7 +530,8 @@ def test_connection_quick(provider=None):
             {"model": "doubao-seed-1-6-250615", "provider": "Doubao"}, # Doubao
             {"model": "qwen-flash", "provider": "Qwen"},               # Qwen
             {"model": "deepseek-chat", "provider": "DeepSeek"},        # DeepSeek  
-            {"model": "gpt-4.1", "provider": "OpenAI"}                 # OpenAI
+            {"model": "gpt-4.1", "provider": "OpenAI"},                # OpenAI
+            {"model": "gemini-2.5-flash", "provider": "Gemini"},       # Gemini
         ]
         success_count = 0
         
@@ -505,10 +539,13 @@ def test_connection_quick(provider=None):
         print("Testing representative models from each provider...")
         
         for model in models_to_test:
+            max_tokens = 20
+            if model["model"].startswith("gemini-2.5"):
+                max_tokens = 1500
             if provider and provider != model['provider']:
                 continue
             try:
-                llm = LLM(model=model["model"], max_tokens=20, timeout=10)
+                llm = LLM(model=model["model"], max_tokens=max_tokens, timeout=10)
                 response = llm.chat("Hi")
                 print(f"✅ {model["model"]}: {response.content[:50]}...")
                 success_count += 1
@@ -516,7 +553,7 @@ def test_connection_quick(provider=None):
                 print(f"❌ {model["model"]}: {str(e)[:50]}...")
         
         print(f"\n🎉 {success_count}/{len(models_to_test)} providers working")
-        print("💡 For comprehensive testing of all 17 models, run: provider-hub -t")
+        print("💡 For comprehensive testing of all models, run: provider-hub -t")
         
     except Exception as e:
         print(f"❌ Test failed: {e}")
