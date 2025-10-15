@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.0] - 2025-10-15
+- New gpt-4o model
+- New `vl_high_resolution_images` parameter for qwen/qwen3-vl models
+- New provider: Gemini and gemini-2.5 & gemini-2.0 models
+
 ## [0.5.0] - 2025-10-02
 
 ### Added

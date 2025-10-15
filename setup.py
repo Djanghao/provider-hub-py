@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="provider_hub",
-    version="0.5.0",
+    version="0.6.0",
     description="Unified LLM provider interface for multi-agent systems",
     author="Djanghao",
     packages=find_packages(),
